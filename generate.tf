@@ -1,4 +1,4 @@
-module generator {
+module "generator" {
   source = "./modules/generator"
 
   profiles = {

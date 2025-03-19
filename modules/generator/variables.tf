@@ -40,12 +40,11 @@ variable profiles {
     condition = (
       alltrue(
         [
-          for profile in var.profiles : (
-            profile.capacity.default > 0 &&
-            profile.capacity.default < 16 &&
+          for name, profile in var.profiles : (
+            profile.capacity.minimum >  0                        &&
+            profile.capacity.maximum <= 16                       &&
             profile.capacity.default <= profile.capacity.maximum &&
-            profile.capacity.default >= profile.capacity.minimum &&
-            profile.capacity.minimum <= profile.capacity.maximum
+            profile.capacity.default >= profile.capacity.minimum
           )
         ]
       )
@@ -56,17 +55,15 @@ variable profiles {
   validation {
     condition = (
       alltrue(
-        [
-          flatten(
-            [
-              for profile in keys(var.profiles): [
-                for rule in var.profiles[profile].rules : (
-                  contains(["Equals", "NotEquals", "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"], rule.metric_trigger.operator)
-                )
+        flatten(
+          [
+            for name, profile in var.profiles: [
+              for rule in profile.rules : [
+                contains(["Equals", "NotEquals", "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"], rule.metric_trigger.operator)
               ]
             ]
-          )
-        ]
+          ]
+        )
       )
     )
     error_message = "a rules metric trigger operator must come from value in [Equals, NotEquals, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual]"
@@ -75,17 +72,32 @@ variable profiles {
   validation {
     condition = (
       alltrue(
-        [
-          flatten(
-            [
-              for profile in keys(var.profiles): [
-                for rule in var.profiles[profile].rules : (
-                  contains(["Average", "Max", "Min", "Sum"], rule.metric_trigger.statistic)
-                )
-              ]
+        flatten(
+          [
+            for profile in keys(var.profiles): [
+              for rule in var.profiles[profile].rules : (
+                contains(["Equals", "NotEquals", "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"], rule.metric_trigger.operator)
+              )
             ]
-          )
-        ]
+          ]
+        )
+      )
+    )
+    error_message = "a rules metric trigger operator must come from value in [Equals, NotEquals, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual]"
+  }
+
+  validation {
+    condition = (
+      alltrue(
+        flatten(
+          [
+            for profile in keys(var.profiles): [
+              for rule in var.profiles[profile].rules : (
+                contains(["Average", "Max", "Min", "Sum"], rule.metric_trigger.statistic)
+              )
+            ]
+          ]
+        )
       )
     )
     error_message = "a rules metric trigger statistic must come from value in [Average, Max, Min, Sum]"
@@ -94,17 +106,15 @@ variable profiles {
   validation {
     condition = (
       alltrue(
-        [
-          flatten(
-            [
-              for profile in keys(var.profiles) : [
-                for rule in var.profiles[profile].rules : (
-                 contains(["Average", "Count", "Maximum", "Minimum", "Last", "Total"], rule.metric_trigger.time_aggregation)
-                )
-              ]
+        flatten(
+          [
+            for profile in keys(var.profiles) : [
+              for rule in var.profiles[profile].rules : (
+               contains(["Average", "Count", "Maximum", "Minimum", "Last", "Total"], rule.metric_trigger.time_aggregation)
+              )
             ]
-          )
-        ]
+          ]
+        )
       )
     )
     error_message = "a rules metric trigger time_aggregation must come from value in [Average, Maximum, Minimum, Last, Total]"
@@ -113,17 +123,15 @@ variable profiles {
   validation {
     condition = (
       alltrue(
-        [
-          flatten(
-            [
-              for profile in keys(var.profiles) : [
-                for rule in var.profiles[profile].rules : (
-                  contains(["Increase", "Decrease"], rule.scale_action.direction)
-                )
-              ]
+        flatten(
+          [
+            for profile in keys(var.profiles) : [
+              for rule in var.profiles[profile].rules : (
+                contains(["Increase", "Decrease"], rule.scale_action.direction)
+              )
             ]
-          )
-        ]
+          ]
+        )
       )
     )
     error_message = "a rules scale action direction must come from value in [Increase, Decrease]"
@@ -132,17 +140,15 @@ variable profiles {
   validation {
     condition = (
       alltrue(
-        [
-          flatten(
-            [
-              for profile in keys(var.profiles) : [
-                for rule in var.profiles[profile].rules : (
-                  contains(["ChangeCount", "ExactCount", "PercentChangeCount", "ServiceAllowedNextValue"], rule.scale_action.type)
-                )
-              ]
+        flatten(
+          [
+            for profile in keys(var.profiles) : [
+              for rule in var.profiles[profile].rules : (
+                contains(["ChangeCount", "ExactCount", "PercentChangeCount", "ServiceAllowedNextValue"], rule.scale_action.type)
+              )
             ]
-          )
-        ]
+          ]
+        )
       )
     )
     error_message = "a rules scale action type must come from value in [ChangeCount, ExactCount, PercentChangeCount and ServiceAllowedNextValue]"

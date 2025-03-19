@@ -1,11 +1,10 @@
 locals {
   assoc-list = flatten(
     [
-      for profile in keys(var.profiles): [
-        for rule in var.profiles[profile].rules : {
-          profile = profile
-          rule    = rule
-        }
+      for name, profile in var.profiles: [
+        for rule in profile.rules : [
+          contains(["Equals", "NotEquals", "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"], rule.metric_trigger.operator)
+        ]
       ]
     ]
   )
